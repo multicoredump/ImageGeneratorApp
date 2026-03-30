@@ -13,6 +13,10 @@ class AppManager {
     let imageGenerator  = ImageGenerator()
     var currentImage: NSImage?
     
+    // store the image generation Task in a variable.
+    // The second is the error type if the task fails; here, since errors are caught, the Never type expresses that the task handles errors itself instead of failing.
+    private var task: Task<Void, Never>?
+    
     // Add an error property and store any error resulting from image generation
     private(set) var error: Error?
     // Add a property to track when the image generator is creating an image.
@@ -23,15 +27,20 @@ class AppManager {
         error = nil
         isGenerating = true
         
-        Task {
+        task = Task {
             do {
                 let generatedImage = try await imageGenerator.generate()
                 currentImage = NSImage(cgImage: generatedImage.cgImage, size: .zero)
                 isGenerating = false
                 
             } catch {
-                self.error = error
-                isGenerating = false
+                do {
+                    try Task.checkCancellation()
+                    self.error = error
+                    isGenerating = false
+                } catch {
+                    // Task cancelled
+                }
             }
         }
     }
@@ -41,6 +50,8 @@ class AppManager {
         currentImage = nil
         error = nil
         isGenerating = false
+        // Cancel the task when generateImage or reset is called
+        task?.cancel()
     }
     
     // adds an ingredient and generates an image
