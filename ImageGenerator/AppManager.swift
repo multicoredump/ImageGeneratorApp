@@ -13,6 +13,9 @@ class AppManager {
     let imageGenerator  = ImageGenerator()
     var currentImage: NSImage?
     
+    // system image generation
+    var showPlayground = false
+    
     // store the image generation Task in a variable.
     // The second is the error type if the task fails; here, since errors are caught, the Never type expresses that the task handles errors itself instead of failing.
     private var task: Task<Void, Never>?
