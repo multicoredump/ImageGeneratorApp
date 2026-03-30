@@ -8,17 +8,38 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @Environment(AppManager.self) private var appManager
+    
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            if appManager.showKitchen {
+                KitchenView()
+            } else {
+                StartView()
+            }
+        }
+        .overlay {
+            if appManager.isGenerating {
+                loadingView()
+            }
+        }
+    }
+
+    
+    // Add a loadingView function that shows a progress view and informative text while an image is generating.
+    
+    private func loadingView() -> some View {
+        HStack(spacing: 8) {
+            ProgressView()
+            Text("Generating image...")
         }
         .padding()
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView().previewEnvironment(generateImage: true)
 }
